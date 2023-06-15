@@ -368,7 +368,11 @@ unsigned int mxc_get_clock(enum mxc_clock clk)
 	case MXC_I2C_CLK:
 		return get_root_clk(I2C1_CLK_ROOT);
 	case MXC_UART_CLK:
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
+		return get_root_clk(UART4_CLK_ROOT);
+#else
 		return get_root_clk(UART1_CLK_ROOT);
+#endif
 	case MXC_QSPI_CLK:
 		return get_root_clk(QSPI_CLK_ROOT);
 	default:

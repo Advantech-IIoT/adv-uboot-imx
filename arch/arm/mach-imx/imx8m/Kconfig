@@ -54,6 +54,16 @@ config IMX8M_MCU_RDC_STOP_CONFIG_ADDR
 	hex "Start address of mcu rdc config when mcu stops"
 	default 0x187000
 
+config TARGET_IMX8MQ_ADV
+	bool "imx8mq_adv"
+	select IMX8MQ
+	select IMX8MQ
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 choice
 	prompt "NXP i.MX8M board select"
 	optional
@@ -72,6 +82,18 @@ config TARGET_IMX8MQ_EVK
 	select FSL_BLOB
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MQ_ECU150
+	bool "imx8mq_ecu150"
+	select TARGET_IMX8MQ_ADV
+
+config TARGET_IMX8MQ_ECU150A1
+	bool "imx8mq_ecu150a1"
+	select TARGET_IMX8MQ_ADV
+
+config TARGET_IMX8MQ_ECU150FL
+	bool "imx8mq_ecu150fl"
+	select TARGET_IMX8MQ_ADV
 
 config TARGET_IMX8MQ_PHANBELL
 	bool "imx8mq_phanbell"
@@ -349,6 +371,7 @@ source "board/beacon/imx8mn/Kconfig"
 source "board/compulab/imx8mm-cl-iot-gate/Kconfig"
 source "board/engicam/imx8mm/Kconfig"
 source "board/freescale/imx8mq_evk/Kconfig"
+source "board/freescale/imx8mq_adv/Kconfig"
 source "board/freescale/imx8mq_val/Kconfig"
 source "board/freescale/imx8mm_ab2/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"

@@ -43,6 +43,170 @@ DECLARE_GLOBAL_DATA_PTR;
 static int stored_bootdelay;
 static int menukey;
 
+static int advupdate(const char *ifname, const char *dev_part, const char *s)
+{
+	int ret = 0;
+	char buf[256] = {0};
+	bool haveconfig = true;
+	
+	//start usb device
+	if (!strcmp(ifname,"usb"))
+	{
+		run_command("usb start", 0);
+	}
+
+	else if (!strcmp(ifname, "mmc"))
+	{
+		//load config file
+		env_set_ulong("filesize",0);
+		sprintf(buf,"fatload %s %s ${loadaddr} ${advufile};env import -t ${loadaddr} ${filesize}", ifname, dev_part);
+		run_command_list(buf, -1, 0);
+		if (env_get_ulong("filesize", 16, 0) == 0) {
+			memset(buf, 0, sizeof(buf));
+			sprintf(buf, "ext2load %s %s ${loadaddr} ${advufile};env import -t ${loadaddr} ${filesize}", ifname, dev_part);
+			run_command_list(buf, -1, 0);
+			if (env_get_ulong("filesize", 16, 0) == 0) {
+				// config file not found!
+				//printf("%s %s config file not found!\n", ifname, dev_part);
+				haveconfig = false;
+			}
+		}
+
+		// find update.bin file
+		if (!haveconfig)
+		{
+			memset(buf, 0, sizeof(buf));
+			sprintf(buf, "if test -e %s %s update.bin; then setenv advupdatebin y; fi", ifname, dev_part);
+			run_command_list(buf, -1, 0);
+			if (env_get_yesno("advupdatebin") != 1)
+			{
+				// update.bin file not found!
+				//printf("%s %s update bin file not found!\n", ifname, dev_part);
+				return 0;
+			}
+		}
+	}
+	else if (!strcmp(ifname, "nand"))
+	{
+    	memset(buf, 0, sizeof(buf));
+    	sprintf(buf, "ubi part NAND.recovery && ubifsmount ubi0;ubifsload ${loadaddr} ${advufile};env import -t ${loadaddr} ${filesize}");
+    	run_command_list(buf, -1, 0);
+		run_command_list("ubifsumount", -1, 0);
+		if (env_get_ulong("filesize", 16, 0) == 0) {
+			// config file not found!
+			//printf("nand config file not found!!\n");
+			haveconfig = false;
+		}
+
+		// find update.bin file
+		if (!haveconfig)
+		{
+			memset(buf, 0, sizeof(buf));
+			sprintf(buf, "ubi part NAND.recovery && ubifsmount ubi0;ubifsload ${loadaddr} update.bin 0x10;env import -t ${loadaddr} 0x10");
+			run_command_list(buf, -1, 0);
+			run_command_list("ubifsumount", -1, 0);
+			if (env_get_ulong("filesize", 16, 0) == 0) 
+			{
+				// update.bin file not found!
+				//printf("nand update bin file not found!!\n");
+				return 0;
+			}
+			else
+			{
+				run_command("setenv advupdatebin y", 0);
+			}
+		}
+	}
+
+	if (haveconfig)
+		printf("Config file found!\n");
+	else if (env_get_yesno("advupdatebin") == 1)
+		printf("update bin file found!\n");
+	else
+		return 0;
+
+	if ((env_get_ulong("filesize",16,0) > 0) || (env_get_yesno("advupdatebin") == 1))
+	{
+#if 1 //+= ramdisk boot
+		if ((env_get_yesno("advimage") == 1) || (env_get_yesno("advrootfs") == 1) || (env_get_yesno("advrecover") == 1) || (env_get_yesno("advupdatebin") == 1))
+		{
+			ret = 2;
+			printf("System recovery mode!\n");
+			if (!strcmp(ifname, "mmc"))
+			{
+#if defined(CONFIG_TARGET_IMX6QDL_ECU1155)
+				if (env_get_yesno("advupdatebin") == 1)
+				{
+					run_command("setenv mmcdev 1", 0);
+				}
+				else
+				{
+					if (!strcmp(dev_part, "0:1"))
+					{
+						run_command("setenv mmcdev 0", 0);
+					}
+					else if (!strcmp(dev_part, "1:3"))
+					{
+						run_command("setenv mmcdev 1", 0);
+					}
+				}
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU150) || defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1)
+				if (env_get_yesno("advupdatebin") == 1)
+				{
+					run_command("setenv mmcdev 0", 0);
+				}
+				else
+				{
+					if (!strcmp(dev_part, "1:1")) /* SD */
+					{
+						run_command("setenv mmcdev 1", 0);
+					}
+					else if (!strcmp(dev_part, "0:3")) /* emmc */
+					{
+						run_command("setenv mmcdev 0", 0);
+					}
+				}
+#else
+				if (env_get_yesno("advupdatebin") == 1)
+				{
+					run_command("setenv mmcdev 0", 0);
+				}
+				else
+				{
+					if (!strcmp(dev_part, "1:1"))
+					{
+						run_command("setenv mmcdev 1", 0);
+					}
+					else if (!strcmp(dev_part, "0:3"))
+					{
+						run_command("setenv mmcdev 0", 0);
+					}
+				}
+#endif
+				run_command("mmc dev ${mmcdev}", 0);				
+				
+				s = env_get("advrfs");
+				run_command_list(s, -1, 0);			
+			}
+			else if (!strcmp(ifname, "usb"))
+			{	
+				s = env_get("advrfs");
+				run_command_list(s, -1, 0);			
+			}
+		}
+		else
+		{
+			printf("System boot mode!\n");
+			s = env_get("bootcmd");
+		}
+#endif		
+	}
+	else
+		printf("Normal boot mode!\n");
+		
+	return ret;
+}
+
 #if !defined(CONFIG_AUTOBOOT_STOP_STR_CRYPT)
 #define CONFIG_AUTOBOOT_STOP_STR_CRYPT ""
 #endif
@@ -367,6 +531,7 @@ static int abortboot_single_key(int bootdelay)
 {
 	int abort = 0;
 	unsigned long ts;
+	char ichar;
 
 	printf("Hit any key to stop autoboot: %2d ", bootdelay);
 
@@ -384,7 +549,11 @@ static int abortboot_single_key(int bootdelay)
 		/* delay 1000 ms */
 		ts = get_timer(0);
 		do {
+#if 1 //+=
 			if (tstc()) {	/* we got a key press	*/
+				ichar = getchar();
+				if (ichar == 0x0d) // got enter key
+				{
 				int key;
 
 				abort  = 1;	/* don't auto boot	*/
@@ -393,8 +562,10 @@ static int abortboot_single_key(int bootdelay)
 				if (IS_ENABLED(CONFIG_AUTOBOOT_USE_MENUKEY))
 					menukey = key;
 				break;
+				}
 			}
 			udelay(10000);
+#endif	
 		} while (!abort && get_timer(ts) < 1000);
 
 		printf("\b\b\b%2d ", bootdelay);
@@ -511,6 +682,22 @@ void autoboot_command(const char *s)
 		if (lock)
 			prev = disable_ctrlc(1); /* disable Ctrl-C checking */
 
+		{
+#if defined(CONFIG_TARGET_IMX8MQ_ECU1155)
+		int ret = 0;
+		ret = advupdate("mmc", "0:1", s);
+		if (!ret)
+		{
+			ret = advupdate("mmc", "1:3", s);
+		}
+#else
+		int ret = 0;
+		ret = advupdate("mmc", "1:1", s);
+		if (!ret)
+			ret = advupdate("mmc", "0:3", s);
+#endif
+		}
+		
 		run_command_list(s, -1, 0);
 
 		if (lock)
