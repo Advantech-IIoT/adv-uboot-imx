@@ -37,8 +37,8 @@ static void setup_mac_addr(void)
 {
 	int ret;
 	char *uid;
-	u8 mac_addr[6];
-	u8 hash[32];
+	u8 mac_addr[6] = { 0 };
+	u8 hash[32] = { 0 };
 	int size = sizeof(hash);
 	struct tag_serialnr serialnr;
 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
@@ -51,7 +51,7 @@ static void setup_mac_addr(void)
 		return;
 
 	uid = (char *)&serialnr;
-	ret = hash_block("sha256", (void *)uid, strlen((const char*)uid), hash, &size);
+	ret = hash_block("sha256", (void *)uid, sizeof(struct tag_serialnr), hash, &size);
 	if (ret) {
 		printf("%s: failed to calculate SHA256\n", __func__);
 		return;
