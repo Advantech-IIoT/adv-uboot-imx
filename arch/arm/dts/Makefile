@@ -997,6 +997,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	fsl-imx8mq-ecu150.dtb \
 	fsl-imx8mq-ecu150a1.dtb \
 	fsl-imx8mq-ecu150fl.dtb \
+	fsl-imx8mq-ecu150f.dtb \
+	fsl-imx8mq-ecu1370.dtb \
 	imx8mm-beacon-kit.dtb \
 	imx8mn-beacon-kit.dtb \
 	imx8mq-mnt-reform2.dtb \

@@ -73,8 +73,14 @@
 #elif defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
 #define FDTFILE_DEFAULT			"fsl-imx8mq-ecu150fl.dtb"
 #define CONSOLE					"console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200"
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU1370)
+#define FDTFILE_DEFAULT			"fsl-imx8mq-ecu1370.dtb"
+#define CONSOLE					"console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200"
 #elif defined(CONFIG_TARGET_IMX8MQ_ECU150A1)
 #define FDTFILE_DEFAULT			"fsl-imx8mq-ecu150a1.dtb"
+#define CONSOLE					"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200"
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU150F)
+#define FDTFILE_DEFAULT			"fsl-imx8mq-ecu150f.dtb"
 #define CONSOLE					"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200"
 #else
 #define FDTFILE_DEFAULT			"fsl-imx8mq-ecu150.dtb"
@@ -214,12 +220,12 @@
 #define PHYS_SDRAM                      0x40000000
 #define PHYS_SDRAM_SIZE					0xC0000000 /* 3GB DDR */
 
-#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1)
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1) || defined(CONFIG_TARGET_IMX8MQ_ECU1370)
 #undef PHYS_SDRAM_SIZE
 #define PHYS_SDRAM_SIZE					SZ_4G /* 4GB DDR */
 #endif
 
-#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU1370)
 #define CONFIG_MXC_UART_BASE		UART4_BASE_ADDR
 #else
 #define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR

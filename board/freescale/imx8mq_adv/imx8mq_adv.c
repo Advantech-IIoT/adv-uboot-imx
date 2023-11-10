@@ -75,7 +75,7 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 };
 
 static iomux_v3_cfg_t const uart_pads[] = {
-#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU1370)
 	IMX8MQ_PAD_UART4_RXD__UART4_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART4_TXD__UART4_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 #else
@@ -203,7 +203,6 @@ int get_tee_load(ulong *load)
 	int board_id;
 
 	board_id = get_imx8m_baseboard_id();
-	//board_id = ADV_IMX8_DDR_2G; //+=
 	/* load TEE to the last 32M of DDR */
 	if (board_id == ADV_IMX8_DDR_1G) {
 		/* for 1G DDR board */
@@ -231,7 +230,6 @@ int board_phys_sdram_size(phys_size_t *ddr_size)
 	int baseboard_id;
 
 	baseboard_id = get_imx8m_baseboard_id();
-	//baseboard_id = ADV_IMX8_DDR_2G; //+=
 	if (baseboard_id == ADV_IMX8_DDR_1G) {
 		/* 1G DDR size */
 		*ddr_size = 0x40000000;
@@ -429,6 +427,40 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1) || defined(CONFIG_TARGET_IMX8MQ_ECU150F)
+#include <linux/delay.h>
+
+#define MINI_PCIE_RESET_DELAY      	100 // 100ms
+
+#define MINIPCIE1_POWER_GPIO		IMX_GPIO_NR(1, 3)
+
+#define MINIPCIE1_MODULE_GPIO		IMX_GPIO_NR(4, 29)
+#define MINIPCIE2_MODULE_GPIO		IMX_GPIO_NR(3, 24)
+
+#define MINIPCIE_GPIO_PAD_CTRL 		(PAD_CTL_PUE | PAD_CTL_DSE1)
+
+static iomux_v3_cfg_t const minipcie_gpio_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO03__GPIO1_IO3 | MUX_PAD_CTRL(MINIPCIE_GPIO_PAD_CTRL),
+
+	IMX8MQ_PAD_SAI3_RXC__GPIO4_IO29 | MUX_PAD_CTRL(MINIPCIE_GPIO_PAD_CTRL),
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(MINIPCIE_GPIO_PAD_CTRL),
+};
+
+static void minipcie_reset(void)
+{
+	imx_iomux_v3_setup_multiple_pads(minipcie_gpio_pads, ARRAY_SIZE(minipcie_gpio_pads));
+
+    /* Minipcie Module Reset */
+	gpio_request(MINIPCIE1_MODULE_GPIO, "minipcie1_module_reset");
+	gpio_request(MINIPCIE2_MODULE_GPIO, "minipcie2_module_reset");
+	gpio_direction_output(MINIPCIE1_MODULE_GPIO, 0);
+	gpio_direction_output(MINIPCIE2_MODULE_GPIO, 0);
+	udelay(MINI_PCIE_RESET_DELAY * 1000);
+	gpio_direction_output(MINIPCIE1_MODULE_GPIO, 1);
+	gpio_direction_output(MINIPCIE2_MODULE_GPIO, 1);
+}
+#endif
+
 int board_init(void)
 {
 #ifdef CONFIG_FSL_QSPI
@@ -462,7 +494,6 @@ int board_late_init(void)
 
 	int baseboard_id;
 	baseboard_id = get_imx8m_baseboard_id();
-	//baseboard_id = ADV_IMX8_DDR_2G; //+=
 	if (baseboard_id == ADV_IMX8_DDR_1G) {
 		/* 1G DDR size */
 		env_set("bootargs_ram_capacity", "cma=296M galcore.contiguousSize=33554432");
@@ -481,12 +512,21 @@ int board_late_init(void)
 	setup_mac_addr();
 	puts("DeviceName is ECU150.\n");
 	env_set("devicename", "ecu150");
+	minipcie_reset();
 #elif defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
 	puts("DeviceName is ECU150FL.\n");
 	env_set("devicename", "ecu150fl");
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU1370)
+	puts("DeviceName is ECU1370.\n");
+	env_set("devicename", "ecu1370");
 #elif defined(CONFIG_TARGET_IMX8MQ_ECU150A1)
 	puts("DeviceName is ECU150A1.\n");
 	env_set("devicename", "ecu150a1");
+	minipcie_reset();
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU150F)
+	puts("DeviceName is ECU150F.\n");
+	env_set("devicename", "ecu150f");
+	minipcie_reset();
 #endif
 
 	return 0;

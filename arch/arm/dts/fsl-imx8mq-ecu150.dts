@@ -17,6 +17,27 @@
 		stdout-path = &uart1;
 	};
 
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "advantech";
+				product = "ecu_150";
+			};
+
+			baseboard {
+				manufacturer = "advantech";
+				product = "ecu_150";
+			};
+
+			chassis {
+				manufacturer = "advantech";
+				product = "ecu_150";
+			};
+		};
+	};
+
 	pcie0_refclk: pcie0-refclk {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;

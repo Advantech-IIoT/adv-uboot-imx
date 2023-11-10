@@ -9,7 +9,7 @@
 #include "imx8mq.dtsi"
 
 / {
-	model = "NXP i.MX8MQ ECU150A1";
+	model = "NXP i.MX8MQ ECU150F";
 	compatible = "fsl,imx8mq-evk", "fsl,imx8mq";
 
 	chosen {
@@ -23,17 +23,17 @@
 		smbios {
 			system {
 				manufacturer = "advantech";
-				product = "ecu_150a1";
+				product = "ecu_150f";
 			};
 
 			baseboard {
 				manufacturer = "advantech";
-				product = "ecu_150a1";
+				product = "ecu_150f";
 			};
 
 			chassis {
 				manufacturer = "advantech";
-				product = "ecu_150a1";
+				product = "ecu_150f";
 			};
 		};
 	};

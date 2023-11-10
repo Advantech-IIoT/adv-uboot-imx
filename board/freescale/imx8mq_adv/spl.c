@@ -46,7 +46,6 @@ static void spl_dram_init(void)
 	if (soc_rev() >= CHIP_REV_2_1)
 	{
 		int board_id = get_imx8m_baseboard_id();
-		//board_id = ADV_IMX8_DDR_2G; //+=
 		
 		if (board_id == ADV_IMX8_DDR_1G)
 			ddr_init(&dram_timing);
@@ -273,7 +272,7 @@ void board_init_f(ulong dummy)
 
 	arch_cpu_init();
 
-#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL)
+#if defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU1370)
 	init_uart_clk(3); /* Init UART3 clock */
 #else
 	init_uart_clk(0); /* Init UART0 clock */

@@ -150,7 +150,7 @@ static int advupdate(const char *ifname, const char *dev_part, const char *s)
 						run_command("setenv mmcdev 1", 0);
 					}
 				}
-#elif defined(CONFIG_TARGET_IMX8MQ_ECU150) || defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1)
+#elif defined(CONFIG_TARGET_IMX8MQ_ECU150) || defined(CONFIG_TARGET_IMX8MQ_ECU150FL) || defined(CONFIG_TARGET_IMX8MQ_ECU150A1) || defined(CONFIG_TARGET_IMX8MQ_ECU1370) || defined(CONFIG_TARGET_IMX8MQ_ECU150F)
 				if (env_get_yesno("advupdatebin") == 1)
 				{
 					run_command("setenv mmcdev 0", 0);
@@ -539,9 +539,18 @@ static int abortboot_single_key(int bootdelay)
 	 * Check if key already pressed
 	 */
 	if (tstc()) {	/* we got a key press	*/
+#if 1 //+=
+		ichar = getchar();
+		if (ichar == 0x0d) // got enter key
+		{
+			puts("\b\b\b 0");
+			abort = 1;	/* don't auto boot	*/
+		}
+#else
 		getchar();	/* consume input	*/
 		puts("\b\b\b 0");
 		abort = 1;	/* don't auto boot	*/
+#endif
 	}
 
 	while ((bootdelay > 0) && (!abort)) {
