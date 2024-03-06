@@ -59,7 +59,7 @@ static int advupdate(const char *ifname, const char *dev_part, const char *s)
 	{
 		//load config file
 		env_set_ulong("filesize",0);
-		sprintf(buf,"fatload %s %s ${loadaddr} ${advufile};env import -t ${loadaddr} ${filesize}", ifname, dev_part);
+		sprintf(buf, "fatload %s %s ${loadaddr} ${advufile};env import -t ${loadaddr} ${filesize}", ifname, dev_part);
 		run_command_list(buf, -1, 0);
 		if (env_get_ulong("filesize", 16, 0) == 0) {
 			memset(buf, 0, sizeof(buf));
@@ -574,7 +574,7 @@ static int abortboot_single_key(int bootdelay)
 				}
 			}
 			udelay(10000);
-#endif	
+#endif
 		} while (!abort && get_timer(ts) < 1000);
 
 		printf("\b\b\b%2d ", bootdelay);

@@ -95,6 +95,14 @@ config TARGET_IMX8MQ_ECU150FL
 	bool "imx8mq_ecu150fl"
 	select TARGET_IMX8MQ_ADV
 
+config TARGET_IMX8MQ_ECU1370
+	bool "imx8mq_ecu1370"
+	select TARGET_IMX8MQ_ADV
+
+config TARGET_IMX8MQ_ECU150F
+	bool "imx8mq_ecu150f"
+	select TARGET_IMX8MQ_ADV
+
 config TARGET_IMX8MQ_PHANBELL
 	bool "imx8mq_phanbell"
 	select BINMAN
